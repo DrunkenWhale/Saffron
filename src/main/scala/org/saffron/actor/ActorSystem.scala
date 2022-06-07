@@ -8,7 +8,7 @@ private class ActorSystem(val name: String) {
 
   def prop[T <: Actor](path: String, actor: T): Actor = {
     actorMap.put(path, actor)
-    actor.asInstanceOf[Actor]
+    actor
   }
 
 }
