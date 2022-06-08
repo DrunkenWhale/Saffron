@@ -3,23 +3,35 @@ package org.saffron.actor
 import scala.annotation.targetName
 import scala.collection.mutable
 import scala.concurrent.Future
+import concurrent.ExecutionContext.Implicits.global
 
 trait Actor {
 
-  private[saffron] val mailbox: mutable.Queue[Any] = mutable.Queue[Any]()
+  private implicit val _actor: Actor = this
 
-  def receive(message: Any): Unit
+  //  private[saffron] val mailbox: mutable.Queue[Any] = mutable.Queue[Any]()
+
+  def receive(message: Any): Receive
 
   def tell(message: Any)(implicit actor: Actor): Unit = {
-    this.mailbox.addOne(ActorMessage(message = message, sender = actor))
+    actor.receive(message)
   }
 
-  def ask(message: Any)(implicit actor:Actor): Future[Any]
+  def ask(message: Any)(implicit actor: Actor): Future[Any] = {
+    Future {
+      actor.receive(message)
+    }
+  }
 
   @targetName("askImpl")
-  def ?(message: Any): Future[Any] = ask(message)
+  def ?(message: Any)(implicit actor: Actor): Future[Any] = ask(message)(actor)
 
   @targetName("tellImpl")
-  def !(message: Any): Unit = tell(message)
+  def !(message: Any)(implicit actor: Actor): Unit = tell(message)(actor)
 
+}
+
+
+object Actor {
+  implicit val emptySender: Actor = x => x
 }

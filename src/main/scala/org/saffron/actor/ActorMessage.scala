@@ -1,3 +1,3 @@
 package org.saffron.actor
 
-case class ActorMessage(message: Any, sender: Actor)
+private[saffron] final case class ActorMessage(message: Any, sender: Actor)
